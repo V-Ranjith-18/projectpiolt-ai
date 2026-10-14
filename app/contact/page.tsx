@@ -79,6 +79,25 @@ export default function ContactPage() {
           ))}
         </section>
 
+        <section className="mt-6 rounded-2xl border border-slate-800 bg-slate-900 p-6">
+          <p className="text-sm font-semibold uppercase tracking-widest text-cyan-400">
+            Code and projects
+          </p>
+          <h2 className="mt-3 text-2xl font-semibold">Find me on GitHub</h2>
+          <p className="mt-3 leading-7 text-slate-400">
+            View my practice projects, source code, and progress as I continue
+            learning.
+          </p>
+          <a
+            href="https://github.com/V-Ranjith-18"
+            target="_blank"
+            rel="noreferrer"
+            className="mt-6 inline-block rounded-xl bg-cyan-400 px-5 py-3 font-semibold text-slate-950 hover:bg-cyan-300"
+          >
+            Visit GitHub profile
+          </a>
+        </section>
+
         <section className="mt-6 rounded-2xl border border-amber-400/30 bg-amber-400/5 p-6">
           <p className="text-sm font-semibold uppercase tracking-widest text-amber-300">
             Privacy reminder
