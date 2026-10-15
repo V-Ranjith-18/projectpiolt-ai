@@ -16,6 +16,7 @@ type Workspace = {
 type ChatMessage = {
   role: "user" | "assistant";
   content: string;
+  provider?: "ollama" | "gemini";
 };
 
 const statuses: WorkspaceTask["status"][] = [
@@ -30,6 +31,7 @@ export default function WorkspacePage() {
   const [chat, setChat] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [provider, setProvider] = useState<"ollama" | "gemini">("ollama");
 
   useEffect(() => {
     const savedWorkspace = localStorage.getItem(
@@ -78,6 +80,7 @@ export default function WorkspacePage() {
           message: question,
           workspaceTitle: workspace.title,
           workspaceGoal: workspace.goal,
+          provider,
         }),
       });
       const data = (await response.json()) as {
@@ -91,7 +94,7 @@ export default function WorkspacePage() {
 
       setChat((current) => [
         ...current,
-        { role: "assistant", content: data.response as string },
+        { role: "assistant", content: data.response as string, provider },
       ]);
     } catch (assistantError) {
       setError(
@@ -219,8 +222,29 @@ export default function WorkspacePage() {
           </h2>
           <p className="mt-3 text-slate-400">
             Ask about the next milestone, an error, or a coding concept.
-            Ollama runs locally on your computer.
+            Choose local Ollama for private, offline help or Gemini for an
+            optional cloud response.
           </p>
+
+          <div className="mt-5">
+            <label
+              htmlFor="ai-provider"
+              className="mb-2 block text-sm font-medium text-slate-300"
+            >
+              AI provider
+            </label>
+            <select
+              id="ai-provider"
+              value={provider}
+              onChange={(event) =>
+                setProvider(event.target.value as "ollama" | "gemini")
+              }
+              className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 outline-none focus:border-cyan-400"
+            >
+              <option value="ollama">Local Ollama (private)</option>
+              <option value="gemini">Gemini (API key required)</option>
+            </select>
+          </div>
 
           {chat.length > 0 && (
             <div className="mt-6 space-y-4">
@@ -234,7 +258,11 @@ export default function WorkspacePage() {
                   }`}
                 >
                   <p className="mb-2 text-xs uppercase tracking-widest text-cyan-400">
-                    {item.role === "user" ? "You" : "ProjectPilot AI"}
+                    {item.role === "user"
+                      ? "You"
+                      : item.provider === "gemini"
+                        ? "ProjectPilot AI • Gemini"
+                        : "ProjectPilot AI • Ollama"}
                   </p>
                   <p className="whitespace-pre-wrap leading-7">
                     {item.content}
@@ -257,7 +285,11 @@ export default function WorkspacePage() {
               disabled={loading || !message.trim()}
               className="rounded-xl bg-cyan-400 px-5 py-3 font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading ? "Thinking..." : "Ask local AI"}
+              {loading
+                ? "Thinking..."
+                : provider === "gemini"
+                  ? "Ask Gemini"
+                  : "Ask local AI"}
             </button>
           </form>
 
