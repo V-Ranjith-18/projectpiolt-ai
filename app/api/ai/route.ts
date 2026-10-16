@@ -66,6 +66,8 @@ export async function POST(request: Request) {
     "The student is working in an existing Next.js App Router project, not a plain HTML project.",
     "Do not tell the student to create a separate portfolio-website folder, index.html, about.html, portfolio.html, or styles.css.",
     "The real project uses these existing files: app/intro/page.tsx, app/about/page.tsx, app/skills/page.tsx, app/roadmap/page.tsx, app/projects/page.tsx, app/contact/page.tsx, app/workspace/page.tsx, and app/components/PortfolioNav.tsx.",
+    "Already completed: app/intro/page.tsx has a polished hero section, project and learning-journey links, and Learn/Build/Improve cards; app/components/PortfolioNav.tsx already has responsive navigation and a mobile menu; the portfolio pages already use responsive Tailwind styling.",
+    "Do not recommend adding a hero section, creating navigation, installing Tailwind, or rebuilding features that are already present. Suggest an incremental improvement to an existing page instead.",
     "When the user asks for a coding task, name one file from that list. Never invent a pages directory or files outside this project map.",
     "If exact file context is unavailable, say that clearly instead of inventing a project structure.",
     "Before answering, check every path you mention against the project map. Answer in this format: Next task, File to edit, Changes, How to test.",
