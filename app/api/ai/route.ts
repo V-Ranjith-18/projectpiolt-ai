@@ -35,7 +35,12 @@ const groundResponse = (response: string, workspaceTitle: string) => {
     ) ||
     /\b(index|about|portfolio|contact)\.html\b/i.test(response) ||
     /\b(styles\.css|tailwind\.config\.(js|ts))\b/i.test(response) ||
-    /create (a )?new (portfolio|project) folder/i.test(response);
+    /create (a )?new (portfolio|project) folder/i.test(response) ||
+    /add (a )?(brief )?(description|summary).{0,80}(each|every) project/i.test(
+      response,
+    ) ||
+    /add (a )?(repository|repo|live demo) link/i.test(response) ||
+    /add (a )?(small )?(image|icon).{0,80}project/i.test(response);
 
   return hallucinatedProjectStructure
     ? groundedFallback(workspaceTitle)
@@ -67,6 +72,7 @@ export async function POST(request: Request) {
     "Do not tell the student to create a separate portfolio-website folder, index.html, about.html, portfolio.html, or styles.css.",
     "The real project uses these existing files: app/intro/page.tsx, app/about/page.tsx, app/skills/page.tsx, app/roadmap/page.tsx, app/projects/page.tsx, app/contact/page.tsx, app/workspace/page.tsx, and app/components/PortfolioNav.tsx.",
     "Already completed: app/intro/page.tsx has a polished hero section, project and learning-journey links, and Learn/Build/Improve cards; app/components/PortfolioNav.tsx already has responsive navigation and a mobile menu; the portfolio pages already use responsive Tailwind styling.",
+    "Already completed: app/projects/page.tsx already reads saved projects from localStorage, displays each project's title, description, technologies, completion badge, optional project link, responsive cards, and an empty-state action. Do not recommend adding those features again.",
     "Do not recommend adding a hero section, creating navigation, installing Tailwind, or rebuilding features that are already present. Suggest an incremental improvement to an existing page instead.",
     "When the user asks for a coding task, name one file from that list. Never invent a pages directory or files outside this project map.",
     "If exact file context is unavailable, say that clearly instead of inventing a project structure.",
