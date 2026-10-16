@@ -130,6 +130,17 @@ const workspaceFallback = (workspaceTitle: string) =>
     `This advice is for the existing "${workspaceTitle || "Responsive Professional Portfolio Website"}" workspace.`,
   ].join("\n");
 
+const storageExplanationFallback = (workspaceTitle: string) =>
+  [
+    "In a Next.js client component, `localStorage.getItem` returns a string. `JSON.parse` throws a `SyntaxError` when that string is empty or is not valid JSON, and an uncaught error inside `useEffect` can stop the component's loading logic.",
+    "",
+    "In this project, the relevant existing code is in `app/workspace/page.tsx`, where the `projectpilot-practice-workspace` value is read and parsed. The safe fix is to put that parse inside a focused `try/catch`, validate the parsed workspace shape, and leave `workspace` as `null` when the data is invalid. The existing empty-workspace message will then render.",
+    "",
+    "Do not change `app/projects/page.tsx`, invent a `projects` storage key, or replace the existing workspace data model.",
+    "",
+    `This explanation is for the existing "${workspaceTitle || "Responsive Professional Portfolio Website"}" workspace.`,
+  ].join("\n");
+
 const groundResponse = (
   response: string,
   workspaceTitle: string,
@@ -291,6 +302,18 @@ export async function POST(request: Request) {
       message,
     );
 
+  const storageExplanationQuestion =
+    /why localstorage json parsing can crash|localstorage.*json parsing|saved workspace json is invalid/i.test(
+      message,
+    );
+
+  if (storageExplanationQuestion) {
+    return NextResponse.json({
+      response: storageExplanationFallback(body.workspaceTitle || ""),
+      provider: body.provider === "gemini" ? "gemini" : "ollama",
+    });
+  }
+
   if (workspaceSpecificQuestion) {
     return NextResponse.json({
       response: workspaceFallback(body.workspaceTitle || ""),
@@ -299,7 +322,7 @@ export async function POST(request: Request) {
   }
 
   const contactSpecificQuestion =
-    /existing contact page|safe improvement for the existing contact page/i.test(
+    /existing contact page|safe improvement for the existing contact page|what can i improve on the contact page|app\/contact\/page\.tsx/i.test(
       message,
     );
 
