@@ -14,6 +14,34 @@ type GeminiResponse = {
   error?: { message?: string };
 };
 
+const groundedFallback = (workspaceTitle: string) =>
+  [
+    "Your project already uses Next.js App Router, so do not create a `pages` folder or separate HTML files.",
+    "",
+    "The next useful task is to improve the existing About page.",
+    "",
+    "Edit this file:",
+    "`app/about/page.tsx`",
+    "",
+    "Add or refine a short introduction, your learning approach, and the technologies you are currently studying. Keep the existing shared navigation and Tailwind styling. Then open `/about` in the browser and check the layout on both desktop and mobile widths.",
+    "",
+    `This advice is for the existing "${workspaceTitle || "Responsive Professional Portfolio Website"}" workspace.`,
+  ].join("\n");
+
+const groundResponse = (response: string, workspaceTitle: string) => {
+  const hallucinatedProjectStructure =
+    /\bpages[\\/](index|about|portfolio|contact)\.(js|jsx|ts|tsx)\b/i.test(
+      response,
+    ) ||
+    /\b(index|about|portfolio|contact)\.html\b/i.test(response) ||
+    /\b(styles\.css|tailwind\.config\.(js|ts))\b/i.test(response) ||
+    /create (a )?new (portfolio|project) folder/i.test(response);
+
+  return hallucinatedProjectStructure
+    ? groundedFallback(workspaceTitle)
+    : response;
+};
+
 export async function POST(request: Request) {
   const body = (await request.json()) as {
     message?: string;
@@ -37,7 +65,10 @@ export async function POST(request: Request) {
     "Give practical, safe, beginner-friendly steps.",
     "The student is working in an existing Next.js App Router project, not a plain HTML project.",
     "Do not tell the student to create a separate portfolio-website folder, index.html, about.html, portfolio.html, or styles.css.",
-    "Refer to the existing app routes and files when giving coding instructions. If exact file context is unavailable, say that clearly and ask which file the student wants to work on.",
+    "The real project uses these existing files: app/intro/page.tsx, app/about/page.tsx, app/skills/page.tsx, app/roadmap/page.tsx, app/projects/page.tsx, app/contact/page.tsx, app/workspace/page.tsx, and app/components/PortfolioNav.tsx.",
+    "When the user asks for a coding task, name one file from that list. Never invent a pages directory or files outside this project map.",
+    "If exact file context is unavailable, say that clearly instead of inventing a project structure.",
+    "Before answering, check every path you mention against the project map. Answer in this format: Next task, File to edit, Changes, How to test.",
     `Current practice project: ${body.workspaceTitle || "Not specified"}.`,
     `Project goal: ${body.workspaceGoal || "Not specified"}.`,
     `Student question: ${message}`,
@@ -85,7 +116,10 @@ export async function POST(request: Request) {
         );
       }
 
-      return NextResponse.json({ response: geminiText, provider: "gemini" });
+      return NextResponse.json({
+        response: groundResponse(geminiText, body.workspaceTitle || ""),
+        provider: "gemini",
+      });
     } catch {
       return NextResponse.json(
         { error: "ProjectPilot could not connect to Gemini. Check your internet connection and try again." },
@@ -125,7 +159,10 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json({ response: data.response, provider: "ollama" });
+    return NextResponse.json({
+      response: groundResponse(data.response, body.workspaceTitle || ""),
+      provider: "ollama",
+    });
   } catch {
     return NextResponse.json(
       {
