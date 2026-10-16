@@ -44,6 +44,20 @@ const roadmapFallback = (workspaceTitle: string) =>
     `This advice is for the existing "${workspaceTitle || "Responsive Professional Portfolio Website"}" workspace.`,
   ].join("\n");
 
+const contactFallback = (workspaceTitle: string) =>
+  [
+    "The Contact page already has collaboration guidance, a GitHub profile link, a privacy reminder, and a safe placeholder for a public email.",
+    "",
+    "The next useful improvement is to make the existing public-email placeholder clearer without adding an external form service.",
+    "",
+    "Edit this file:",
+    "`app/contact/page.tsx`",
+    "",
+    "If you choose to publish a separate professional email, replace only the placeholder with a `mailto:` link. Do not add a form, Formspree, a backend endpoint, or a private email address unless you explicitly decide to provide one. Test the link and confirm that no private information is displayed.",
+    "",
+    `This advice is for the existing "${workspaceTitle || "Responsive Professional Portfolio Website"}" workspace.`,
+  ].join("\n");
+
 const groundResponse = (response: string, workspaceTitle: string) => {
   const hallucinatedProjectStructure =
     /\bpages[\\/](index|about|portfolio|contact)\.(js|jsx|ts|tsx)\b/i.test(
@@ -71,6 +85,11 @@ const groundResponse = (response: string, workspaceTitle: string) => {
       response,
     );
 
+  const contactFormRecommendation =
+    /add (a )?(contact|email) form/i.test(response) ||
+    /formspree|placeholder email service|backend server/i.test(response) ||
+    /fields? for (name|email|message)/i.test(response);
+
   const roadmapRewrite =
     /add (a )?(roadmap )?section title/i.test(response) ||
     /create (a )?(list|list of) (roadmap )?milestones/i.test(response) ||
@@ -80,7 +99,9 @@ const groundResponse = (response: string, workspaceTitle: string) => {
       response,
     );
 
-  return roadmapRewrite
+  return contactFormRecommendation
+    ? contactFallback(workspaceTitle)
+    : roadmapRewrite
     ? roadmapFallback(workspaceTitle)
     : hallucinatedProjectStructure
       ? groundedFallback(workspaceTitle)
@@ -116,6 +137,7 @@ export async function POST(request: Request) {
     "Already completed: app/about/page.tsx already contains the student's learning journey, first-year B.Tech education, learning approach, honest-progress explanation, and four current focus areas. Do not recommend adding another education section, certifications, hobbies, or a personal quote unless the student explicitly provides truthful details and asks to add them.",
     "Already completed: app/skills/page.tsx already has three skill-level groups (currently learning, basic familiarity, and future learning goals), skill lists, responsive cards, learning principles, descriptions, and Tailwind styling. Do not recommend adding a technical-skills section, skill list, icons, or Tailwind styling again.",
     "Already completed: app/roadmap/page.tsx already has its roadmap title, six static stages with descriptions and topics, learning progress panel, progress principle, navigation, and responsive Tailwind styling. Its stages currently use statuses such as `Current priority`, `Next stage`, `Planned`, and `Long-term goal`; there is no `Complete` property, React state, or setRoadmapStages function. Never recommend changing a status to `Complete` or mutating the static stage data. If asked for exact code changes, provide only a targeted patch for the hard-coded progress values using the existing `Current priority` status.",
+    "Already completed: app/contact/page.tsx already has collaboration guidance, a safe public-email placeholder, a GitHub profile link, collaboration cards, navigation, and a privacy reminder. Do not recommend adding a contact form, Formspree, a backend email service, or publishing private contact information unless the student explicitly asks for that scope and provides safe public details.",
     "Do not recommend adding a hero section, creating navigation, installing Tailwind, or rebuilding features that are already present. Suggest an incremental improvement to an existing page instead.",
     "When the user asks for a coding task, name one file from that list. Never invent a pages directory or files outside this project map.",
     "If exact file context is unavailable, say that clearly instead of inventing a project structure.",
