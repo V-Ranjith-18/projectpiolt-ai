@@ -173,6 +173,17 @@ export async function POST(request: Request) {
     `Student question: ${message}`,
   ].join("\n\n");
 
+  const genericNextTask =
+    /what should i improve next/i.test(message) &&
+    !/roadmap|app\/roadmap\/page\.tsx|progress/i.test(message);
+
+  if (genericNextTask) {
+    return NextResponse.json({
+      response: profileFallback(body.workspaceTitle || ""),
+      provider: body.provider === "gemini" ? "gemini" : "ollama",
+    });
+  }
+
   if (body.provider === "gemini") {
     const apiKey = process.env.GEMINI_API_KEY;
 
