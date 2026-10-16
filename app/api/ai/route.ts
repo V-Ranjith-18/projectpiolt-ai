@@ -67,7 +67,7 @@ const groundResponse = (response: string, workspaceTitle: string) => {
     /create (a )?(list|list of) (roadmap )?milestones/i.test(response) ||
     /add descriptions? to each milestone/i.test(response) ||
     /const roadmappage\s*=\s*\(\)\s*=>/i.test(response) ||
-    /stage\.progress|progress:\s*\d+|renderprogress|progress indicator/i.test(
+    /stage\.progress|progress:\s*\d+|renderprogress|progress indicator|roadmapdata|studentprogress|completed:\s*(true|false)/i.test(
       response,
     );
 
@@ -76,7 +76,7 @@ const groundResponse = (response: string, workspaceTitle: string) => {
     /create (a )?(list|list of) (roadmap )?milestones/i.test(response) ||
     /add descriptions? to each milestone/i.test(response) ||
     /const roadmappage\s*=\s*\(\)\s*=>/i.test(response) ||
-    /stage\.progress|progress:\s*\d+|renderprogress|progress indicator/i.test(
+    /stage\.progress|progress:\s*\d+|renderprogress|progress indicator|roadmapdata|studentprogress|completed:\s*(true|false)/i.test(
       response,
     );
 
