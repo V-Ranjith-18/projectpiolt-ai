@@ -18,12 +18,12 @@ const groundedFallback = (workspaceTitle: string) =>
   [
     "Your project already uses Next.js App Router, so do not create a `pages` folder or separate HTML files.",
     "",
-    "The next useful task is to improve the existing About page.",
+    "The next useful task is to make the learning roadmap progress data-driven.",
     "",
     "Edit this file:",
-    "`app/about/page.tsx`",
+    "`app/roadmap/page.tsx`",
     "",
-    "Add or refine a short introduction, your learning approach, and the technologies you are currently studying. Keep the existing shared navigation and Tailwind styling. Then open `/about` in the browser and check the layout on both desktop and mobile widths.",
+    "Replace the hard-coded `1 / 6` progress text and `w-[16.67%]` progress-bar width with values calculated from the roadmap stages. Keep the existing stage content, shared navigation, and responsive Tailwind styling. Then open `/roadmap` and check the progress display on desktop and mobile widths.",
     "",
     `This advice is for the existing "${workspaceTitle || "Responsive Professional Portfolio Website"}" workspace.`,
   ].join("\n");
