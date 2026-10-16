@@ -58,6 +58,21 @@ const contactFallback = (workspaceTitle: string) =>
     `This advice is for the existing "${workspaceTitle || "Responsive Professional Portfolio Website"}" workspace.`,
   ].join("\n");
 
+const contactSpecificFallback = (workspaceTitle: string) =>
+  [
+    "The existing contact page already has a GitHub CTA, collaboration guidance, a privacy reminder, and responsive styling.",
+    "",
+    "File to edit: `app/contact/page.tsx`",
+    "",
+    "One safe improvement is to make the existing GitHub link more accessible by adding a clear accessible label or visible explanation that it opens the profile in a new tab. Preserve the real URL `https://github.com/V-Ranjith-18`, the existing `target` and `rel` attributes, and the current design.",
+    "",
+    "Do not add another CTA, replace the GitHub username with a placeholder, add a contact form, add Formspree, add a backend, or publish private contact information.",
+    "",
+    "How to test: open `/contact`, confirm the existing GitHub link works, verify it opens in a new tab, and check the link remains usable at mobile width.",
+    "",
+    `This advice is for the existing "${workspaceTitle || "Responsive Professional Portfolio Website"}" workspace.`,
+  ].join("\n");
+
 const profileFallback = (workspaceTitle: string) =>
   [
     "The next useful improvement is to make the existing developer profile easier to review before saving.",
@@ -197,6 +212,18 @@ export async function POST(request: Request) {
     /(small improvement|more reliable|reliable|validation|localstorage|design)/i.test(
       message,
     );
+
+  const contactSpecificQuestion =
+    /existing contact page|safe improvement for the existing contact page/i.test(
+      message,
+    );
+
+  if (contactSpecificQuestion) {
+    return NextResponse.json({
+      response: contactSpecificFallback(body.workspaceTitle || ""),
+      provider: body.provider === "gemini" ? "gemini" : "ollama",
+    });
+  }
 
   if (profileSpecificQuestion) {
     return NextResponse.json({
