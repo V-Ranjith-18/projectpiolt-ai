@@ -43,7 +43,10 @@ const groundResponse = (response: string, workspaceTitle: string) => {
     /add (a )?(small )?(image|icon).{0,80}project/i.test(response) ||
     /add (a )?(brief )?(section|paragraph).{0,80}(educational background|certifications|hobbies|interests|personal quote)/i.test(
       response,
-    );
+    ) ||
+    /add (a )?(technical )?skills? section/i.test(response) ||
+    /add (icons?|skill list).{0,80}(skills?|technical)/i.test(response) ||
+    /use tailwind css for styling/i.test(response);
 
   return hallucinatedProjectStructure
     ? groundedFallback(workspaceTitle)
@@ -77,6 +80,7 @@ export async function POST(request: Request) {
     "Already completed: app/intro/page.tsx has a polished hero section, project and learning-journey links, and Learn/Build/Improve cards; app/components/PortfolioNav.tsx already has responsive navigation and a mobile menu; the portfolio pages already use responsive Tailwind styling.",
     "Already completed: app/projects/page.tsx already reads saved projects from localStorage, displays each project's title, description, technologies, completion badge, optional project link, responsive cards, and an empty-state action. Do not recommend adding those features again.",
     "Already completed: app/about/page.tsx already contains the student's learning journey, first-year B.Tech education, learning approach, honest-progress explanation, and four current focus areas. Do not recommend adding another education section, certifications, hobbies, or a personal quote unless the student explicitly provides truthful details and asks to add them.",
+    "Already completed: app/skills/page.tsx already has three skill-level groups (currently learning, basic familiarity, and future learning goals), skill lists, responsive cards, learning principles, descriptions, and Tailwind styling. Do not recommend adding a technical-skills section, skill list, icons, or Tailwind styling again.",
     "Do not recommend adding a hero section, creating navigation, installing Tailwind, or rebuilding features that are already present. Suggest an incremental improvement to an existing page instead.",
     "When the user asks for a coding task, name one file from that list. Never invent a pages directory or files outside this project map.",
     "If exact file context is unavailable, say that clearly instead of inventing a project structure.",
