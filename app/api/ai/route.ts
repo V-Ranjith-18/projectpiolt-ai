@@ -66,13 +66,19 @@ const groundResponse = (response: string, workspaceTitle: string) => {
     /add (a )?(roadmap )?section title/i.test(response) ||
     /create (a )?(list|list of) (roadmap )?milestones/i.test(response) ||
     /add descriptions? to each milestone/i.test(response) ||
-    /const roadmappage\s*=\s*\(\)\s*=>/i.test(response);
+    /const roadmappage\s*=\s*\(\)\s*=>/i.test(response) ||
+    /stage\.progress|progress:\s*\d+|renderprogress|progress indicator/i.test(
+      response,
+    );
 
   const roadmapRewrite =
     /add (a )?(roadmap )?section title/i.test(response) ||
     /create (a )?(list|list of) (roadmap )?milestones/i.test(response) ||
     /add descriptions? to each milestone/i.test(response) ||
-    /const roadmappage\s*=\s*\(\)\s*=>/i.test(response);
+    /const roadmappage\s*=\s*\(\)\s*=>/i.test(response) ||
+    /stage\.progress|progress:\s*\d+|renderprogress|progress indicator/i.test(
+      response,
+    );
 
   return roadmapRewrite
     ? roadmapFallback(workspaceTitle)
