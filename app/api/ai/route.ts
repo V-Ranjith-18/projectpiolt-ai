@@ -180,7 +180,8 @@ const groundResponse = (
     /fields? for (name|email|message)/i.test(response);
 
   const genericNextTask =
-    /what should i improve next/i.test(message) &&
+    (/what should i improve next/i.test(message) ||
+      /what is one useful improvement/i.test(message)) &&
     !/roadmap|app\/roadmap\/page\.tsx|progress/i.test(message);
   const repeatedRoadmapAdvice =
     /current-stage position|progresspercentage|hard-coded\s+[`\\]?1\s*\/\s*6|learning roadmap progress|roadmap page already contains/i.test(
