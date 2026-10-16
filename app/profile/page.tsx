@@ -9,6 +9,7 @@ export default function ProfilePage() {
   const [rate, setRate] = useState("");
   const [projectTypes, setProjectTypes] = useState("");
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const savedProfile = localStorage.getItem("projectpilot-profile");
@@ -25,18 +26,27 @@ export default function ProfilePage() {
 
   function saveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const trimmedName = name.trim();
+    const trimmedSkills = skills.trim();
+
+    if (!trimmedName || !trimmedSkills) {
+      setSaved(false);
+      setError("Name and skills are required before saving your profile.");
+      return;
+    }
 
     localStorage.setItem(
       "projectpilot-profile",
       JSON.stringify({
-        name,
-        skills,
+        name: trimmedName,
+        skills: trimmedSkills,
         experience,
         rate,
         projectTypes,
       }),
     );
 
+    setError("");
     setSaved(true);
   }
 
@@ -164,6 +174,12 @@ export default function ProfilePage() {
           >
             Save developer profile
           </button>
+
+          {error && (
+            <p className="rounded-xl border border-red-400/30 bg-red-400/10 p-4 text-red-300">
+              {error}
+            </p>
+          )}
 
           {saved && (
             <p className="rounded-xl border border-green-400/30 bg-green-400/10 p-4 text-green-300">
