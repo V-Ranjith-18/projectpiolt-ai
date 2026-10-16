@@ -100,6 +100,21 @@ const profileSpecificFallback = (workspaceTitle: string) =>
     `This advice is for the existing "${workspaceTitle || "Responsive Professional Portfolio Website"}" workspace.`,
   ].join("\n");
 
+const generalGroundedFallback = (workspaceTitle: string) =>
+  [
+    "Choose one small reliability improvement in an existing page rather than rebuilding a feature.",
+    "",
+    "File to edit: `app/profile/page.tsx`",
+    "",
+    "Improve the existing profile form by trimming required values before saving. Preserve the current fields (`name`, `skills`, `experience`, `rate`, and `projectTypes`), the `projectpilot-profile` localStorage key, the existing design, and the saved confirmation.",
+    "",
+    "Do not create new folders, duplicate existing portfolio sections, add email or bio fields, or connect an external service.",
+    "",
+    "How to test: submit whitespace-only required values, then valid values, refresh the page, and confirm valid data persists.",
+    "",
+    `This advice is for the existing "${workspaceTitle || "Responsive Professional Portfolio Website"}" workspace.`,
+  ].join("\n");
+
 const workspaceFallback = (workspaceTitle: string) =>
   [
     "The workspace page already has its description, milestone list, status selectors, calculated progress bar, localStorage persistence, AI provider selector, and mentor chat.",
@@ -146,6 +161,19 @@ const groundResponse = (
       response,
     );
 
+  const inventedProfileModel =
+    /formdata|email|bio|handlechange|validationerrors|profile updated successfully/i.test(
+      response,
+    );
+  const inventedExternalService =
+    /formspree|email service|backend server|task management tool|project management tool/i.test(
+      response,
+    );
+  const mentionsUnknownProjectFile =
+    /\b(pages\/|pages\\|index\.html|about\.html|portfolio\.html|contact\.html|styles\.css|components\/Header|components\\Header)\b/i.test(
+      response,
+    );
+
   const contactFormRecommendation =
     /add (a )?(contact|email) form/i.test(response) ||
     /formspree|placeholder email service|backend server/i.test(response) ||
@@ -167,6 +195,35 @@ const groundResponse = (
     /stage\.progress|progress:\s*\d+|renderprogress|progress indicator|roadmapdata|studentprogress|completed:\s*(true|false)|complete.{0,40}(property|status)|setroadmapstages|updatedstages|status.{0,40}complete/i.test(
       response,
     );
+
+  if (genericNextTask && (repeatedRoadmapAdvice || inventedProfileModel)) {
+    return profileFallback(workspaceTitle);
+  }
+
+  if (
+    /app\/profile\/page\.tsx/i.test(message) &&
+    (inventedProfileModel || inventedExternalService || mentionsUnknownProjectFile)
+  ) {
+    return profileSpecificFallback(workspaceTitle);
+  }
+
+  if (
+    /contact page|app\/contact\/page\.tsx/i.test(message) &&
+    (inventedExternalService || /yourusername|add another cta|add a .*form/i.test(response))
+  ) {
+    return contactSpecificFallback(workspaceTitle);
+  }
+
+  if (
+    /workspace|app\/workspace\/page\.tsx/i.test(message) &&
+    (inventedExternalService || /add .*project|add .*task|project list|task list/i.test(response))
+  ) {
+    return workspaceFallback(workspaceTitle);
+  }
+
+  if (mentionsUnknownProjectFile || inventedExternalService) {
+    return generalGroundedFallback(workspaceTitle);
+  }
 
   return genericNextTask && repeatedRoadmapAdvice
     ? profileFallback(workspaceTitle)
