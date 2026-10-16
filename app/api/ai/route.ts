@@ -58,7 +58,23 @@ const contactFallback = (workspaceTitle: string) =>
     `This advice is for the existing "${workspaceTitle || "Responsive Professional Portfolio Website"}" workspace.`,
   ].join("\n");
 
-const groundResponse = (response: string, workspaceTitle: string) => {
+const profileFallback = (workspaceTitle: string) =>
+  [
+    "The next useful improvement is to make the existing developer profile easier to review before saving.",
+    "",
+    "Edit this file:",
+    "`app/profile/page.tsx`",
+    "",
+    "Add a small character or length hint below the Skills and Experience fields, and disable or guard the save action when the required fields contain only whitespace. Keep the existing localStorage behavior, form fields, and responsive styling. Test saving valid data, refreshing the page, and submitting incomplete data.",
+    "",
+    `This advice is for the existing "${workspaceTitle || "Responsive Professional Portfolio Website"}" workspace.`,
+  ].join("\n");
+
+const groundResponse = (
+  response: string,
+  workspaceTitle: string,
+  message: string,
+) => {
   const hallucinatedProjectStructure =
     /\bpages[\\/](index|about|portfolio|contact)\.(js|jsx|ts|tsx)\b/i.test(
       response,
@@ -90,6 +106,12 @@ const groundResponse = (response: string, workspaceTitle: string) => {
     /formspree|placeholder email service|backend server/i.test(response) ||
     /fields? for (name|email|message)/i.test(response);
 
+  const genericNextTask = /what should i improve next/i.test(message);
+  const repeatedRoadmapAdvice =
+    /current-stage position|progresspercentage|hard-coded `?1 \/ 6|learning roadmap progress/i.test(
+      response,
+    );
+
   const roadmapRewrite =
     /add (a )?(roadmap )?section title/i.test(response) ||
     /create (a )?(list|list of) (roadmap )?milestones/i.test(response) ||
@@ -99,7 +121,9 @@ const groundResponse = (response: string, workspaceTitle: string) => {
       response,
     );
 
-  return contactFormRecommendation
+  return genericNextTask && repeatedRoadmapAdvice
+    ? profileFallback(workspaceTitle)
+    : contactFormRecommendation
     ? contactFallback(workspaceTitle)
     : roadmapRewrite
     ? roadmapFallback(workspaceTitle)
@@ -190,7 +214,11 @@ export async function POST(request: Request) {
       }
 
       return NextResponse.json({
-        response: groundResponse(geminiText, body.workspaceTitle || ""),
+        response: groundResponse(
+          geminiText,
+          body.workspaceTitle || "",
+          message,
+        ),
         provider: "gemini",
       });
     } catch {
@@ -233,7 +261,11 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({
-      response: groundResponse(data.response, body.workspaceTitle || ""),
+      response: groundResponse(
+        data.response,
+        body.workspaceTitle || "",
+        message,
+      ),
       provider: "ollama",
     });
   } catch {
