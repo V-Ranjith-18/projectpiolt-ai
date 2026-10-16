@@ -100,6 +100,21 @@ const profileSpecificFallback = (workspaceTitle: string) =>
     `This advice is for the existing "${workspaceTitle || "Responsive Professional Portfolio Website"}" workspace.`,
   ].join("\n");
 
+const workspaceFallback = (workspaceTitle: string) =>
+  [
+    "The workspace page already has its description, milestone list, status selectors, calculated progress bar, localStorage persistence, AI provider selector, and mentor chat.",
+    "",
+    "File to edit: `app/workspace/page.tsx`",
+    "",
+    "One useful improvement is to make the workspace loading safer. Wrap the `JSON.parse(savedWorkspace)` call in a focused validation guard so malformed localStorage data does not crash the page. Keep the existing workspace fields, task status updates, progress calculation, chat behavior, and design.",
+    "",
+    "Do not add another project list, task-management service, external tool link, or duplicate introduction.",
+    "",
+    "How to test: clear or edit the `projectpilot-practice-workspace` localStorage value, reload `/workspace`, and confirm the page shows its existing empty-workspace message instead of crashing. Then create a valid workspace and confirm milestones still update and persist.",
+    "",
+    `This advice is for the existing "${workspaceTitle || "Responsive Professional Portfolio Website"}" workspace.`,
+  ].join("\n");
+
 const groundResponse = (
   response: string,
   workspaceTitle: string,
@@ -212,6 +227,18 @@ export async function POST(request: Request) {
     /(small improvement|more reliable|reliable|validation|localstorage|design)/i.test(
       message,
     );
+
+  const workspaceSpecificQuestion =
+    /next improvement for my existing projectpilot app|workspace page|app\/workspace\/page\.tsx/i.test(
+      message,
+    );
+
+  if (workspaceSpecificQuestion) {
+    return NextResponse.json({
+      response: workspaceFallback(body.workspaceTitle || ""),
+      provider: body.provider === "gemini" ? "gemini" : "ollama",
+    });
+  }
 
   const contactSpecificQuestion =
     /existing contact page|safe improvement for the existing contact page/i.test(
