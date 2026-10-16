@@ -70,6 +70,21 @@ const profileFallback = (workspaceTitle: string) =>
     `This advice is for the existing "${workspaceTitle || "Responsive Professional Portfolio Website"}" workspace.`,
   ].join("\n");
 
+const profileSpecificFallback = (workspaceTitle: string) =>
+  [
+    "Make one small reliability improvement in the existing profile form.",
+    "",
+    "File to edit: `app/profile/page.tsx`",
+    "",
+    "In `saveProfile`, validate the required `name` and `skills` values after trimming whitespace before writing to localStorage. If either trimmed value is empty, stop the save and show an error message. Otherwise, keep the existing localStorage key, profile fields, and `saved` success message unchanged.",
+    "",
+    "Do not add an email or bio field, replace the form data model, create a backend, or change the page design.",
+    "",
+    "How to test: submit blank or spaces-only Name and Skills and confirm nothing is saved; then submit valid values, refresh the page, and confirm the saved values remain.",
+    "",
+    `This advice is for the existing "${workspaceTitle || "Responsive Professional Portfolio Website"}" workspace.`,
+  ].join("\n");
+
 const groundResponse = (
   response: string,
   workspaceTitle: string,
@@ -176,6 +191,19 @@ export async function POST(request: Request) {
   const genericNextTask =
     /what should i improve next/i.test(message) &&
     !/roadmap|app\/roadmap\/page\.tsx|progress/i.test(message);
+
+  const profileSpecificQuestion =
+    /app\/profile\/page\.tsx/i.test(message) &&
+    /(small improvement|more reliable|reliable|validation|localstorage|design)/i.test(
+      message,
+    );
+
+  if (profileSpecificQuestion) {
+    return NextResponse.json({
+      response: profileSpecificFallback(body.workspaceTitle || ""),
+      provider: body.provider === "gemini" ? "gemini" : "ollama",
+    });
+  }
 
   if (genericNextTask) {
     return NextResponse.json({
