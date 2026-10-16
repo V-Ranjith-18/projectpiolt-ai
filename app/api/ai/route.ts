@@ -28,6 +28,22 @@ const groundedFallback = (workspaceTitle: string) =>
     `This advice is for the existing "${workspaceTitle || "Responsive Professional Portfolio Website"}" workspace.`,
   ].join("\n");
 
+const roadmapFallback = (workspaceTitle: string) =>
+  [
+    "The roadmap page already contains its title, six roadmap stages, descriptions, topic lists, progress principle, navigation, and responsive Tailwind styling.",
+    "",
+    "Make only this targeted change in `app/roadmap/page.tsx`:",
+    "",
+    "1. Add a completed-stage count near the component, based on the roadmap stages that have `status === \"Complete\"`.",
+    "2. Calculate `progressPercentage` from that count and `roadmapStages.length`.",
+    "3. Replace the hard-coded `1 / 6` text with `${completedStages} / ${roadmapStages.length}`.",
+    "4. Replace the hard-coded `w-[16.67%]` class with an inline `style={{ width: `${progressPercentage}%` }}`.",
+    "",
+    "Do not replace the page, create a new milestone list, or add another roadmap section. Test `/roadmap` at desktop and mobile widths.",
+    "",
+    `This advice is for the existing "${workspaceTitle || "Responsive Professional Portfolio Website"}" workspace.`,
+  ].join("\n");
+
 const groundResponse = (response: string, workspaceTitle: string) => {
   const hallucinatedProjectStructure =
     /\bpages[\\/](index|about|portfolio|contact)\.(js|jsx|ts|tsx)\b/i.test(
@@ -46,10 +62,22 @@ const groundResponse = (response: string, workspaceTitle: string) => {
     ) ||
     /add (a )?(technical )?skills? section/i.test(response) ||
     /add (icons?|skill list).{0,80}(skills?|technical)/i.test(response) ||
-    /use tailwind css for styling/i.test(response);
+    /use tailwind css for styling/i.test(response) ||
+    /add (a )?(roadmap )?section title/i.test(response) ||
+    /create (a )?(list|list of) (roadmap )?milestones/i.test(response) ||
+    /add descriptions? to each milestone/i.test(response) ||
+    /const roadmappage\s*=\s*\(\)\s*=>/i.test(response);
 
-  return hallucinatedProjectStructure
-    ? groundedFallback(workspaceTitle)
+  const roadmapRewrite =
+    /add (a )?(roadmap )?section title/i.test(response) ||
+    /create (a )?(list|list of) (roadmap )?milestones/i.test(response) ||
+    /add descriptions? to each milestone/i.test(response) ||
+    /const roadmappage\s*=\s*\(\)\s*=>/i.test(response);
+
+  return roadmapRewrite
+    ? roadmapFallback(workspaceTitle)
+    : hallucinatedProjectStructure
+      ? groundedFallback(workspaceTitle)
     : response;
 };
 
@@ -81,6 +109,7 @@ export async function POST(request: Request) {
     "Already completed: app/projects/page.tsx already reads saved projects from localStorage, displays each project's title, description, technologies, completion badge, optional project link, responsive cards, and an empty-state action. Do not recommend adding those features again.",
     "Already completed: app/about/page.tsx already contains the student's learning journey, first-year B.Tech education, learning approach, honest-progress explanation, and four current focus areas. Do not recommend adding another education section, certifications, hobbies, or a personal quote unless the student explicitly provides truthful details and asks to add them.",
     "Already completed: app/skills/page.tsx already has three skill-level groups (currently learning, basic familiarity, and future learning goals), skill lists, responsive cards, learning principles, descriptions, and Tailwind styling. Do not recommend adding a technical-skills section, skill list, icons, or Tailwind styling again.",
+    "Already completed: app/roadmap/page.tsx already has its roadmap title, six stages with descriptions and topics, learning progress panel, progress principle, navigation, and responsive Tailwind styling. Do not recommend creating another roadmap section, milestone list, or page replacement. If asked for exact code changes, provide only a targeted patch for the hard-coded progress values.",
     "Do not recommend adding a hero section, creating navigation, installing Tailwind, or rebuilding features that are already present. Suggest an incremental improvement to an existing page instead.",
     "When the user asks for a coding task, name one file from that list. Never invent a pages directory or files outside this project map.",
     "If exact file context is unavailable, say that clearly instead of inventing a project structure.",
