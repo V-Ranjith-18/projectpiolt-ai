@@ -81,17 +81,34 @@ const roadmapStages = [
   },
 ];
 
+const currentStageIndex = roadmapStages.findIndex(
+  (stage) => stage.status === "Current priority",
+);
+
+const currentStagePosition =
+  currentStageIndex >= 0 ? currentStageIndex + 1 : 1;
+
+const progressPercentage =
+  (currentStagePosition / roadmapStages.length) * 100;
+
 export default function RoadmapPage() {
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
       <div className="mx-auto max-w-5xl">
         <PortfolioNav />
+
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <a href="/skills" className="text-sm text-cyan-400 hover:text-cyan-300">
+          <a
+            href="/skills"
+            className="text-sm text-cyan-400 hover:text-cyan-300"
+          >
             ← Back to skills
           </a>
 
-          <a href="/" className="text-sm text-slate-400 hover:text-cyan-300">
+          <a
+            href="/"
+            className="text-sm text-slate-400 hover:text-cyan-300"
+          >
             ProjectPilot home
           </a>
         </div>
@@ -118,14 +135,22 @@ export default function RoadmapPage() {
               <p className="text-sm font-semibold text-cyan-300">
                 Learning progress
               </p>
+
               <p className="mt-1 text-sm text-slate-400">
                 Building the foundation before moving to advanced work.
               </p>
             </div>
-            <span className="text-2xl font-bold text-cyan-300">1 / 6</span>
+
+            <span className="text-2xl font-bold text-cyan-300">
+              {currentStagePosition} / {roadmapStages.length}
+            </span>
           </div>
+
           <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-800">
-            <div className="h-full w-[16.67%] rounded-full bg-cyan-400" />
+            <div
+              className="h-full rounded-full bg-cyan-400"
+              style={{ width: `${progressPercentage}%` }}
+            />
           </div>
         </div>
 

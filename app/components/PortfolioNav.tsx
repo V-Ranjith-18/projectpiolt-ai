@@ -17,7 +17,7 @@ export default function PortfolioNav() {
   return (
     <nav
       aria-label="Portfolio navigation"
-      className="mb-8 border-b border-slate-800 pb-4"
+      className="mb-8 rounded-2xl border border-slate-800/80 bg-slate-950/70 p-3 shadow-lg shadow-slate-950/20 backdrop-blur"
     >
       <div className="flex items-center justify-between">
         <a
@@ -49,7 +49,7 @@ export default function PortfolioNav() {
             key={href}
             href={href}
             onClick={() => setIsOpen(false)}
-            className="rounded-lg px-3 py-2 text-sm text-slate-400 hover:bg-slate-900 hover:text-cyan-300"
+            className="rounded-xl px-3 py-2 text-sm text-slate-400 transition hover:bg-cyan-400/10 hover:text-cyan-300"
           >
             {label}
           </a>
