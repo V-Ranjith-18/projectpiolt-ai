@@ -241,15 +241,47 @@ ${profileName || "Your Name"}`);
       "projectpilot-projects",
       JSON.stringify([savedProject, ...savedProjects]),
     );
+    const nextTasks: Array<{
+      title: string;
+      status: "Not started" | "In progress" | "Complete";
+    }> = practiceProject.milestones.map((milestone) => ({
+      title: milestone,
+      status: "Not started",
+    }));
+
+    try {
+      const existingWorkspace = JSON.parse(
+        localStorage.getItem("projectpilot-practice-workspace") || "null",
+      ) as {
+        tasks?: Array<{ title?: unknown; status?: unknown }>;
+      } | null;
+
+      if (Array.isArray(existingWorkspace?.tasks)) {
+        for (const task of nextTasks) {
+          const existingTask = existingWorkspace.tasks.find(
+            (savedTask) => savedTask.title === task.title,
+          );
+
+          if (
+            existingTask &&
+            (existingTask.status === "Not started" ||
+              existingTask.status === "In progress" ||
+              existingTask.status === "Complete")
+          ) {
+            task.status = existingTask.status;
+          }
+        }
+      }
+    } catch {
+      // Invalid old workspace data is replaced by the new valid workspace.
+    }
+
     localStorage.setItem(
       "projectpilot-practice-workspace",
       JSON.stringify({
         title: practiceProject.title,
         goal: practiceProject.goal,
-        tasks: practiceProject.milestones.map((milestone) => ({
-          title: milestone,
-          status: "Not started",
-        })),
+        tasks: nextTasks,
       }),
     );
   }

@@ -25,6 +25,43 @@ const statuses: WorkspaceTask["status"][] = [
   "Complete",
 ];
 
+function isWorkspace(value: unknown): value is Workspace {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as {
+    title?: unknown;
+    goal?: unknown;
+    tasks?: unknown;
+  };
+
+  if (
+    typeof candidate.title !== "string" ||
+    typeof candidate.goal !== "string" ||
+    !Array.isArray(candidate.tasks)
+  ) {
+    return false;
+  }
+
+  return candidate.tasks.every((task) => {
+    if (!task || typeof task !== "object") {
+      return false;
+    }
+
+    const candidateTask = task as {
+      title?: unknown;
+      status?: unknown;
+    };
+
+    return (
+      typeof candidateTask.title === "string" &&
+      typeof candidateTask.status === "string" &&
+      statuses.includes(candidateTask.status as WorkspaceTask["status"])
+    );
+  });
+}
+
 export default function WorkspacePage() {
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [message, setMessage] = useState("");
@@ -32,19 +69,53 @@ export default function WorkspacePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [provider, setProvider] = useState<"ollama" | "gemini">("ollama");
+  const [draftStatuses, setDraftStatuses] = useState<
+    Record<number, WorkspaceTask["status"]>
+  >({});
+  const [confirmedTaskIndex, setConfirmedTaskIndex] = useState<number | null>(
+    null,
+  );
 
   useEffect(() => {
     const savedWorkspace = localStorage.getItem(
       "projectpilot-practice-workspace",
     );
 
-    if (savedWorkspace) {
-      setWorkspace(JSON.parse(savedWorkspace));
+    if (!savedWorkspace) {
+      return;
+    }
+
+    try {
+      const parsedWorkspace: unknown = JSON.parse(savedWorkspace);
+
+      if (isWorkspace(parsedWorkspace)) {
+        setWorkspace(parsedWorkspace);
+        setDraftStatuses(
+          Object.fromEntries(
+            parsedWorkspace.tasks.map((task, index) => [index, task.status]),
+          ),
+        );
+      } else {
+        localStorage.removeItem("projectpilot-practice-workspace");
+      }
+    } catch {
+      localStorage.removeItem("projectpilot-practice-workspace");
     }
   }, []);
 
-  function updateTask(index: number, status: WorkspaceTask["status"]) {
+  function selectTaskStatus(index: number, status: WorkspaceTask["status"]) {
+    setDraftStatuses((current) => ({ ...current, [index]: status }));
+    setConfirmedTaskIndex(null);
+  }
+
+  function finishTask(index: number) {
     if (!workspace) {
+      return;
+    }
+
+    const status = draftStatuses[index] || workspace.tasks[index]?.status;
+
+    if (!status) {
       return;
     }
 
@@ -57,6 +128,8 @@ export default function WorkspacePage() {
       "projectpilot-practice-workspace",
       JSON.stringify(updatedWorkspace),
     );
+    setDraftStatuses((current) => ({ ...current, [index]: status }));
+    setConfirmedTaskIndex(index);
   }
 
   async function askAssistant(event: React.FormEvent<HTMLFormElement>) {
@@ -137,7 +210,10 @@ export default function WorkspacePage() {
           <a href="/analyze" className="text-sm text-cyan-400">
             ← Back to analysis
           </a>
-          <a href="/history" className="text-sm text-slate-400 hover:text-cyan-300">
+          <a
+            href="/history"
+            className="text-sm text-slate-400 hover:text-cyan-300"
+          >
             View history
           </a>
         </div>
@@ -184,6 +260,7 @@ export default function WorkspacePage() {
               Update each status as you complete and understand the work.
             </p>
           </div>
+
           {workspace.tasks.map((task, index) => (
             <article
               key={task.title}
@@ -194,10 +271,11 @@ export default function WorkspacePage() {
                   <p className="text-sm text-slate-500">Milestone {index + 1}</p>
                   <h3 className="mt-1 font-semibold">{task.title}</h3>
                 </div>
+
                 <select
-                  value={task.status}
+                  value={draftStatuses[index] || task.status}
                   onChange={(event) =>
-                    updateTask(
+                    selectTaskStatus(
                       index,
                       event.target.value as WorkspaceTask["status"],
                     )
@@ -208,6 +286,20 @@ export default function WorkspacePage() {
                     <option key={status}>{status}</option>
                   ))}
                 </select>
+              </div>
+              <div className="mt-4 flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => finishTask(index)}
+                  className="rounded-lg bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-300"
+                >
+                  Finish milestone
+                </button>
+                {confirmedTaskIndex === index && (
+                  <span className="text-sm text-emerald-300">
+                    Status saved successfully.
+                  </span>
+                )}
               </div>
             </article>
           ))}
